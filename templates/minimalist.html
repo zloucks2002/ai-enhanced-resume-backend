@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Resume</title>
+<style>
+/* === COMPACT MODE === */
+body.compact {
+    font-size: 10.3pt !important;
+    line-height: 1.17 !important;
+}
+
+body.compact h1 {
+    font-size: 19pt !important;
+    margin-bottom: 0px !important;
+}
+
+body.compact h2 {
+    margin-top: 12px !important;
+    margin-bottom: 4px !important;
+    font-size: 12.5pt !important;
+}
+
+body.compact .job,
+body.compact .edu-item,
+body.compact .project-item,
+body.compact .vol-item,
+body.compact .cert-item {
+    margin-bottom: 5px !important;
+}
+
+body.compact li {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body.compact .contact {
+    margin-bottom: 10px !important;
+}
+
+
+/* === NORMAL MODE === */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0.7in;
+    font-size: 11pt;
+    color: #000;
+    line-height: 1.25;
+}
+
+h1 {
+    font-size: 20pt;
+    text-align: left;
+    margin-bottom: 2px;
+    font-weight: bold;
+}
+
+.contact {
+    font-size: 10pt;
+    margin-bottom: 25px;
+    color: #444;
+}
+
+h2 {
+    font-size: 13pt;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    font-weight: bold;
+}
+
+ul {
+    margin: 0 0 0 14px;
+}
+
+.job, .edu-item, .project-item, .vol-item, .cert-item {
+    margin-bottom: 12px;
+}
+
+.job-header, .edu-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+.company {
+    margin-bottom: 4px;
+    color: #333;
+}
+</style>
+</head>
+<body>
+
+<h1>{{full_name}}</h1>
+
+<div class="contact">
+    {{email}} • {{phone}} • {{linkedin}}
+</div>
+
+{{summary}}
+
+<h2>Experience</h2>
+{{experience}}
+
+<h2>Education</h2>
+{{education}}
+
+<h2>Skills</h2>
+<div>{{skills}}</div>
+
+{{projects_section}}
+
+{{certifications_section}}
+
+{{volunteer_section}}
+
+</body>
+</html>

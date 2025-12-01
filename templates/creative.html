@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Resume</title>
+<style>
+/* === COMPACT MODE === */
+body.compact {
+    font-size: 10.3pt !important;
+    line-height: 1.18 !important;
+}
+
+body.compact h1 {
+    font-size: 22pt !important;
+    margin-bottom: 0px !important;
+}
+
+body.compact h2 {
+    margin-top: 14px !important;
+    margin-bottom: 4px !important;
+    font-size: 13pt !important;
+}
+
+body.compact .job,
+body.compact .edu-item,
+body.compact .project-item,
+body.compact .vol-item,
+body.compact .cert-item {
+    margin-bottom: 6px !important;
+}
+
+body.compact li {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body.compact .contact {
+    margin-bottom: 14px !important;
+}
+
+
+/* === NORMAL MODE === */
+body {
+    font-family: "Inter", Arial, sans-serif;
+    margin: 0.55in;
+    font-size: 11pt;
+    color: #222;
+    line-height: 1.28;
+}
+
+h1 {
+    font-size: 24pt;
+    text-align: center;
+    margin-bottom: 4px;
+    color: #8a2be2;
+    font-weight: 700;
+}
+
+.contact {
+    text-align: center;
+    font-size: 10.5pt;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+h2 {
+    font-size: 14pt;
+    margin-top: 20px;
+    margin-bottom: 6px;
+    color: #8a2be2;
+    border-bottom: 2px solid #8a2be2;
+    padding-bottom: 2px;
+    font-weight: 600;
+}
+
+.job, .edu-item, .project-item, .vol-item, .cert-item {
+    margin-bottom: 12px;
+}
+
+.job-header, .edu-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    color: #8a2be2;
+}
+
+.company {
+    margin-bottom: 4px;
+    font-style: italic;
+    color: #555;
+}
+
+ul { margin: 0 0 0 14px; }
+</style>
+</head>
+<body>
+
+<h1>{{full_name}}</h1>
+
+<div class="contact">
+    {{email}} • {{phone}} • {{linkedin}}
+</div>
+
+{{summary}}
+
+<h2>Experience</h2>
+{{experience}}
+
+<h2>Education</h2>
+{{education}}
+
+<h2>Skills</h2>
+<div>{{skills}}</div>
+
+{{projects_section}}
+
+{{certifications_section}}
+
+{{volunteer_section}}
+
+</body>
+</html>

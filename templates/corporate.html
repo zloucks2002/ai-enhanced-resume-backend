@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Resume</title>
+<style>
+/* === COMPACT MODE (applies only when <body class="compact">) === */
+body.compact {
+    font-size: 10.3pt !important;
+    line-height: 1.18 !important;
+}
+
+body.compact h1 {
+    font-size: 20pt !important;
+    margin-bottom: 0px !important;
+}
+
+body.compact h2 {
+    margin-top: 14px !important;
+    margin-bottom: 4px !important;
+    font-size: 12.5pt !important;
+}
+
+body.compact .job,
+body.compact .edu-item,
+body.compact .project-item,
+body.compact .vol-item,
+body.compact .cert-item {
+    margin-bottom: 6px !important;
+}
+
+body.compact li {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body.compact .contact {
+    margin-bottom: 14px !important;
+}
+
+
+/* === NORMAL MODE === */
+body {
+    font-family: "Helvetica", Arial, sans-serif;
+    margin: 0.65in;
+    color: #111;
+    font-size: 11pt;
+    line-height: 1.25;
+}
+
+h1 {
+    font-size: 20pt;
+    margin-bottom: 4px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.contact {
+    text-align: center;
+    font-size: 10.5pt;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+h2 {
+    font-size: 13pt;
+    border-bottom: 1px solid #aaa;
+    margin-top: 22px;
+    margin-bottom: 6px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+ul {
+    margin: 0 0 0 14px;
+    padding: 0;
+}
+
+li {
+    margin: 2px 0;
+}
+
+.job, .edu-item, .project-item, .vol-item, .cert-item {
+    margin-bottom: 10px;
+}
+
+.job-header, .edu-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+.company {
+    font-style: italic;
+    margin-bottom: 4px;
+}
+</style>
+</head>
+<body>
+
+<h1>{{full_name}}</h1>
+
+<div class="contact">
+    {{email}} &nbsp;•&nbsp; {{phone}} &nbsp;•&nbsp; {{linkedin}}
+</div>
+
+{{summary}}
+
+<h2>Experience</h2>
+{{experience}}
+
+<h2>Education</h2>
+{{education}}
+
+<h2>Skills</h2>
+<div>{{skills}}</div>
+
+{{projects_section}}
+
+{{certifications_section}}
+
+{{volunteer_section}}
+
+</body>
+</html>

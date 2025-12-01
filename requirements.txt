@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+openai>=1.0.0
+PyMuPDF
+python-docx
+playwright
+supabase
+pypandoc
