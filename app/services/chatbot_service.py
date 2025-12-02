@@ -34,9 +34,10 @@ def send_chat_message(session_id: str, text: str):
 
     client = get_openai()
 
-    # append user message
+    # Append user message
     session["messages"].append({"role": "user", "content": text})
 
+    # Get assistant reply
     try:
         completion = client.chat.completions.create(
             model="gpt-4o",
@@ -48,23 +49,22 @@ def send_chat_message(session_id: str, text: str):
     except Exception as e:
         return {"error": str(e)}
 
-    # --- NEW: Extract JSON state on every assistant reply ---
-    updated_json = get_resume_json(session["messages"], client)
-    if isinstance(updated_json, dict):
-        session["resume_json"] = updated_json
+    # Extract JSON state after EVERY message
+    try:
+        resume_json = get_resume_json(session["messages"], client)
+        session["resume_json"] = resume_json
+    except Exception:
+        session["resume_json"] = {}
 
-    updated_prefs = get_resume_preferences(session["messages"], client)
-    if isinstance(updated_prefs, dict):
-        session["preferences_json"] = updated_prefs
-
-    # detect readiness
+    # Detect readiness
     ready = "i'm ready to generate the resume." in reply.lower()
 
     return {
         "reply": reply,
         "session_id": session_id,
-        "ready_to_generate": ready,
+        "ready_to_generate": ready
     }
+
 
 
 def get_resume_json_from_session(session_id):
