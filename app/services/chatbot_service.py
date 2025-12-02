@@ -1,18 +1,31 @@
 import uuid
-from chatbot import init_conversation, get_resume_json, get_resume_preferences, parse_doc_text, extract_resume_text, normalize_descriptions, analyze_resume
+from chatbot import (
+    init_conversation,
+    get_resume_json,
+    get_resume_preferences,
+)
 from app.utils.openai_client import get_openai
 
-# In-memory session store for dev (later you can move to Supabase or Redis)
+# In-memory session store for dev
 SESSIONS = {}
 
 def start_chat_session(user_id=None):
     session_id = str(uuid.uuid4())
     messages = init_conversation()
+
     SESSIONS[session_id] = {
         "messages": messages,
-        "user_id": user_id
+        "user_id": user_id,
+        "resume_json": {},           # <-- NEW
+        "preferences_json": {},      # <-- NEW
     }
-    return {"session_id": session_id, "message": messages[-1]["content"]}
+
+    # return assistant greeting
+    return {
+        "session_id": session_id,
+        "message": messages[-1]["content"],
+    }
+
 
 def send_chat_message(session_id: str, text: str):
     session = SESSIONS.get(session_id)
@@ -21,10 +34,9 @@ def send_chat_message(session_id: str, text: str):
 
     client = get_openai()
 
-    # Append user message
+    # append user message
     session["messages"].append({"role": "user", "content": text})
 
-    # Call GPT for ONE turn (not the console run_chatbot loop)
     try:
         completion = client.chat.completions.create(
             model="gpt-4o",
@@ -36,28 +48,34 @@ def send_chat_message(session_id: str, text: str):
     except Exception as e:
         return {"error": str(e)}
 
-    # Detect readiness
+    # --- NEW: Extract JSON state on every assistant reply ---
+    updated_json = get_resume_json(session["messages"], client)
+    if isinstance(updated_json, dict):
+        session["resume_json"] = updated_json
+
+    updated_prefs = get_resume_preferences(session["messages"], client)
+    if isinstance(updated_prefs, dict):
+        session["preferences_json"] = updated_prefs
+
+    # detect readiness
     ready = "i'm ready to generate the resume." in reply.lower()
 
     return {
         "reply": reply,
         "session_id": session_id,
-        "ready_to_generate": ready
+        "ready_to_generate": ready,
     }
 
+
 def get_resume_json_from_session(session_id):
-    if session_id not in SESSIONS:
+    session = SESSIONS.get(session_id)
+    if not session:
         return {"error": "Invalid session_id"}
-    client = get_openai()
-    messages = SESSIONS[session_id]["messages"]
-    json_state = get_resume_json(messages, client)
-    return json_state
+    return session.get("resume_json", {})
+
 
 def get_preferences_from_session(session_id):
-    if session_id not in SESSIONS:
+    session = SESSIONS.get(session_id)
+    if not session:
         return {"error": "Invalid session_id"}
-    client = get_openai()
-    messages = SESSIONS[session_id]["messages"]
-    prefs = get_resume_preferences(messages, client)
-    return prefs
-
+    return session.get("preferences_json", {})
