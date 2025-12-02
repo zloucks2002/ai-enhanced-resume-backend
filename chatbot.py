@@ -246,15 +246,15 @@ def run_chatbot(messages, client):
 #Requests the complete current resume JSON state from the AI
 def get_resume_json(messages, client):
 
-    messages.append({
+    tmp_messages = messages + [{
         "role": "user",
         "content": "Please return the complete current resume JSON state (according to the schema). Return only JSON."
-    })
+    }]
 
     try:
         completion = client.chat.completions.create(
             model="gpt-4o",
-            messages=messages,
+            messages=tmp_messages,
             temperature=0
         )
         reply = completion.choices[0].message.content.strip()
