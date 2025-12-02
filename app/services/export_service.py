@@ -1,5 +1,3 @@
-# app/services/export_service.py
-
 import os
 import tempfile
 from io import BytesIO
@@ -11,9 +9,6 @@ import pypandoc
 async def html_to_pdf_bytes(html: str) -> bytes:
     """
     Render the given HTML string to a PDF using Playwright/Chromium.
-
-    This mirrors your previous CLI flow that wrote an HTML file and used
-    page.pdf() so the CSS and layout should match your current templates.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
         html_path = os.path.join(tmpdir, "resume.html")
@@ -23,16 +18,16 @@ async def html_to_pdf_bytes(html: str) -> bytes:
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)
 
-        # Use Playwright to render HTML -> PDF (same config you used before)
+        # Playwright async API
         async with async_playwright() as p:
             browser = await p.chromium.launch(args=["--no-sandbox"])
             context = await browser.new_context()
             page = await context.new_page()
 
-            # Use file:// so it behaves like your old export_resume_to_pdf()
-            page.goto(f"file://{html_path}")
+            await page.goto(f"file://{html_path}")
 
-            page.pdf(
+            # THIS WAS YOUR ERROR — page.pdf MUST BE AWAITED
+            await page.pdf(
                 path=pdf_path,
                 format="Letter",
                 margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
@@ -42,20 +37,18 @@ async def html_to_pdf_bytes(html: str) -> bytes:
             )
 
             await browser.close()
-        
+
         if not os.path.exists(pdf_path):
             raise Exception("PDF was not generated.")
 
-        # Read the resulting PDF and return as bytes
+        # Read the resulting PDF
         with open(pdf_path, "rb") as f:
             return f.read()
 
 
 def html_to_docx_bytes(html: str) -> bytes:
     """
-    Convert the given HTML string to DOCX using pandoc via pypandoc.
-    Layout won't be 100% identical (Word is Word), but structure & text
-    will be preserved.
+    Convert HTML string → DOCX via Pandoc.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
         html_path = os.path.join(tmpdir, "resume.html")
@@ -64,7 +57,6 @@ def html_to_docx_bytes(html: str) -> bytes:
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)
 
-        # Use pandoc via pypandoc
         pypandoc.convert_file(
             html_path,
             "docx",
