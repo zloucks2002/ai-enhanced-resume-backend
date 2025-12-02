@@ -25,8 +25,9 @@ async def html_to_pdf_bytes(html: str) -> bytes:
 
         # Use Playwright to render HTML -> PDF (same config you used before)
         async with async_playwright() as p:
-            browser = p.chromium.launch()
-            page = browser.new_page()
+            browser = await p.chromium.launch()
+            context = await browser.new_context()
+            page = await context.new_page()
 
             # Use file:// so it behaves like your old export_resume_to_pdf()
             page.goto(f"file://{html_path}")
@@ -40,7 +41,7 @@ async def html_to_pdf_bytes(html: str) -> bytes:
                 scale=1.0,
             )
 
-            browser.close()
+            await browser.close()
 
         # Read the resulting PDF and return as bytes
         with open(pdf_path, "rb") as f:
