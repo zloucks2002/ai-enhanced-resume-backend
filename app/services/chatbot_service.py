@@ -71,7 +71,10 @@ def get_resume_json_from_session(session_id):
     session = SESSIONS.get(session_id)
     if not session:
         return {"error": "Invalid session_id"}
-    return session.get("resume_json", {})
+    client = get_openai()
+    messages = SESSIONS[session_id]["messages"]
+    json_state = get_resume_json(messages, client)
+    return json_state
 
 
 def get_preferences_from_session(session_id):
