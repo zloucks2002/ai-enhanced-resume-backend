@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
 from fastapi.responses import FileResponse
 from app.services.resume_service import generate_html_resume_service, parse_resume_file
 from app.services.analysis_service import analyze_resume_service
@@ -53,7 +53,7 @@ async def export_pdf(file: UploadFile = File(...)):
 @router.post("/export/docx")
 async def export_docx(file: UploadFile = File(...)):
     html_bytes = await file.read()
-    
+
     temp_html = f"/tmp/{uuid.uuid4()}.html"
     temp_docx = f"/tmp/{uuid.uuid4()}.docx"
 
