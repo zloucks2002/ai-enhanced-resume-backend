@@ -1,8 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File
+from fastapi.responses import FileResponse
 from app.services.resume_service import generate_html_resume_service, parse_resume_file
 from app.services.analysis_service import analyze_resume_service
-from app.utils.export import export_pdf_bytes, export_docx_bytes
+from app.services.export_service import html_to_pdf, html_to_docx
 import json
+import uuid
 
 router = APIRouter()
 
@@ -28,24 +30,41 @@ async def analyze_with_context(
     pdf_bytes = await file.read()
     return analyze_resume_service(pdf_bytes, parsed, target_job)
 
-# Export PDF
 @router.post("/export/pdf")
-async def export_pdf(body: dict):
-    html = body.get("html")
-    if not html:
-        return {"error": "Missing HTML data"}
-    pdf_bytes = export_pdf_bytes(html)
-    return {
-        "pdf_base64": pdf_bytes.decode("utf-8")
-    }
+async def export_pdf(file: UploadFile = File(...)):
+    html_bytes = await file.read()
 
-# Export DOCX
+    temp_html = f"/tmp/{uuid.uuid4()}.html"
+    temp_pdf = f"/tmp/{uuid.uuid4()}.pdf"
+
+    with open(temp_html, "wb") as f:
+        f.write(html_bytes)
+
+    # Convert HTML → PDF
+    html_to_pdf(temp_html, temp_pdf)
+
+    return FileResponse(
+        temp_pdf,
+        media_type="application/pdf",
+        filename="resume.pdf"
+    )
+
+
 @router.post("/export/docx")
-async def export_docx(body: dict):
-    html = body.get("html")
-    if not html:
-        return {"error": "Missing HTML data"}
-    docx_bytes = export_docx_bytes(html)
-    return {
-        "docx_base64": docx_bytes.decode("utf-8")
-    }
+async def export_docx(file: UploadFile = File(...)):
+    html_bytes = await file.read()
+    
+    temp_html = f"/tmp/{uuid.uuid4()}.html"
+    temp_docx = f"/tmp/{uuid.uuid4()}.docx"
+
+    with open(temp_html, "wb") as f:
+        f.write(html_bytes)
+
+    # Convert HTML → DOCX
+    html_to_docx(temp_html, temp_docx)
+
+    return FileResponse(
+        temp_docx,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename="resume.docx"
+    )
