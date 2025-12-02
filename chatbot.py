@@ -143,6 +143,7 @@ def init_conversation():
 
         ------------------------------------
         Behavioral Guidelines:
+        - Start the conversation by greeting the user and asking for their full name.
         - Ask only one question at a time, do not request multiple details in one message.
         - Allow multiple entries for each section before moving on (e.g., multiple projects)
         - Do not assume multiple details from a single answer. Confirm and clarify one field at a time.
