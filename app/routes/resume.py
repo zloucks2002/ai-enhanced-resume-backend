@@ -1,59 +1,51 @@
 from fastapi import APIRouter, UploadFile, File, Form
-from app.services.resume_service import generate_html_resume_service
+from app.services.resume_service import generate_html_resume_service, parse_resume_file
 from app.services.analysis_service import analyze_resume_service
-from app.services.resume_service import parse_resume_file
+from app.utils.export import export_pdf_bytes, export_docx_bytes
 import json
-import tempfile
-from fastapi.responses import FileResponse
-from app.utils.export import export_resume_to_pdf_file, export_resume_to_docx_file
 
 router = APIRouter()
 
+
+# Generate HTML resume
 @router.post("/generate")
 async def generate_resume(body: dict):
     return generate_html_resume_service(body)
 
+# Parse uploaded PDF/DOCX
 @router.post("/parse")
 async def parse_resume(file: UploadFile = File(...)):
     return parse_resume_file(file)
 
+# Analyze with context
 @router.post("/analyze-with-context")
 async def analyze_with_context(
     file: UploadFile = File(...),
     parsed_json: str = Form(...),
     target_job: str = Form(...),
 ):
-    parsed_resume = json.loads(parsed_json)
+    parsed = json.loads(parsed_json)
     pdf_bytes = await file.read()
-    return analyze_resume_service(pdf_bytes, parsed_resume, target_job)
+    return analyze_resume_service(pdf_bytes, parsed, target_job)
 
+# Export PDF
 @router.post("/export/pdf")
-async def export_pdf(file: UploadFile = File(...)):
-    #Save uploaded HTML temporarily
-    temp_html = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
-    temp_html.write(await file.read())
-    temp_html.close()
+async def export_pdf(body: dict):
+    html = body.get("html")
+    if not html:
+        return {"error": "Missing HTML data"}
+    pdf_bytes = export_pdf_bytes(html)
+    return {
+        "pdf_base64": pdf_bytes.decode("utf-8")
+    }
 
-    #Output PDF path
-    output_path = temp_html.name.replace(".html", ".pdf")
-    #Convert HTML to PDF
-    export_resume_to_pdf_file(temp_html.name, output_path)
-
-    return FileResponse(output_path, filename="resume.pdf")
-
+# Export DOCX
 @router.post("/export/docx")
-async def export_docx(file: UploadFile = File(...)):
-    #Save uploaded HTML temporarily
-    temp_html = tempfile.NamedTemporaryFile(delete=False, suffix=".html")
-    temp_html.write(await file.read())
-    temp_html.close()
-
-    #Output DOCX path
-    output_path = temp_html.name.replace(".html", ".docx")
-
-    #Convert
-    export_resume_to_docx_file(temp_html.name, output_path)
-
-    return FileResponse(output_path, filename="resume.docx")
-
-
+async def export_docx(body: dict):
+    html = body.get("html")
+    if not html:
+        return {"error": "Missing HTML data"}
+    docx_bytes = export_docx_bytes(html)
+    return {
+        "docx_base64": docx_bytes.decode("utf-8")
+    }
