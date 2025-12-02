@@ -19,3 +19,20 @@ def parse_resume_file(upload):
     text = extract_resume_text(temp_path)
     parsed = parse_doc_text(text, client)
     return parsed
+
+def get_resume_html_by_id(supabase, resume_id):
+    try:
+        response = (
+            supabase.table("resumes")
+            .select("resume_html")
+            .eq("id", resume_id)
+            .single()
+            .execute()
+        )
+
+        if not response.data:
+            return None
+        return response.data["resume_html"]
+    except Exception as e:
+        print(f"Error fetching resume HTML: {e}")
+        return None

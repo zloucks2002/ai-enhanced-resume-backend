@@ -1,8 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, Form
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.responses import StreamingResponse
 from app.services.resume_service import generate_html_resume_service, parse_resume_file
 from app.services.analysis_service import analyze_resume_service
-from app.services.export_service import html_to_pdf, html_to_docx
+from app.services.export_service import html_to_pdf_bytes, html_to_docx_bytes
+from io import BytesIO
+
 import json
 import uuid
 
@@ -32,39 +34,38 @@ async def analyze_with_context(
 
 @router.post("/export/pdf")
 async def export_pdf(file: UploadFile = File(...)):
-    html_bytes = await file.read()
 
-    temp_html = f"/tmp/{uuid.uuid4()}.html"
-    temp_pdf = f"/tmp/{uuid.uuid4()}.pdf"
+    try:
+        html_bytes = await file.read()
+        html = html_bytes.decode("utf-8", errors="ignore")
+        pdf = html_to_pdf_bytes(html)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {e}")
 
-    with open(temp_html, "wb") as f:
-        f.write(html_bytes)
-
-    # Convert HTML → PDF
-    html_to_pdf(temp_html, temp_pdf)
-
-    return FileResponse(
-        temp_pdf,
+    return StreamingResponse(
+        BytesIO(pdf),
         media_type="application/pdf",
-        filename="resume.pdf"
+        headers={"Content-Disposition": 'attachment; filename="resume.pdf"'},
     )
 
 
 @router.post("/export/docx")
 async def export_docx(file: UploadFile = File(...)):
-    html_bytes = await file.read()
+    """
+    Same as /export/pdf but outputs DOCX.
+    """
+    try:
+        html_bytes = await file.read()
+        html = html_bytes.decode("utf-8", errors="ignore")
+        docx = html_to_docx_bytes(html)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate DOCX: {e}")
 
-    temp_html = f"/tmp/{uuid.uuid4()}.html"
-    temp_docx = f"/tmp/{uuid.uuid4()}.docx"
-
-    with open(temp_html, "wb") as f:
-        f.write(html_bytes)
-
-    # Convert HTML → DOCX
-    html_to_docx(temp_html, temp_docx)
-
-    return FileResponse(
-        temp_docx,
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        filename="resume.docx"
+    return StreamingResponse(
+        BytesIO(docx),
+        media_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "wordprocessingml.document"
+        ),
+        headers={"Content-Disposition": 'attachment; filename="resume.docx"'},
     )
