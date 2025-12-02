@@ -49,13 +49,6 @@ def send_chat_message(session_id: str, text: str):
     except Exception as e:
         return {"error": str(e)}
 
-    # Extract JSON state after EVERY message
-    try:
-        resume_json = get_resume_json(session["messages"], client)
-        session["resume_json"] = resume_json
-    except Exception:
-        session["resume_json"] = {}
-
     # Detect readiness
     ready = "i'm ready to generate the resume." in reply.lower()
 
@@ -72,9 +65,8 @@ def get_resume_json_from_session(session_id):
     if not session:
         return {"error": "Invalid session_id"}
     client = get_openai()
-    messages = SESSIONS[session_id]["messages"]
-    json_state = get_resume_json(messages, client)
-    return json_state
+    messages = session["messages"].copy()
+    return get_resume_json(messages, client)
 
 
 def get_preferences_from_session(session_id):
