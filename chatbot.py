@@ -123,7 +123,7 @@ def init_conversation():
                 "volunteer": []
                 }}
 
-        - Update this JSON state internally only when resume-related information is provided.
+        IMPORTANT: Immediately update the internal JSON state after EVERY user message that provides ANY resume-related data, even if it is only contact information or basic details that go into a JSON field. Do this from the very beginning of the conversation.
         - If the user input is unrelated (clarifications, general chat), do not modify the JSON.
         - Never display this JSON in the conversation. It is for backend preview only.
         - Always keep the JSON state up to date and retrievable by the backend.
