@@ -1,39 +1,24 @@
 FROM python:3.11-slim
 
-# Install WeasyPrint dependencies (Debian Bookworm versions)
-RUN apt-get update && apt-get install -y \
-    libpango-1.0-0 \
-    libcairo2 \
-    libcairo-gobject2 \
-    libgdk-pixbuf-2.0-0 \
-    libffi-dev \
-    shared-mime-info \
-    curl \
-    pandoc \
-    && apt-get clean
-
-# Set workdir
+# Set working directory
 WORKDIR /app
 
-# Copy requirements
-COPY requirements.txt .
-
+# Install system dependencies for WeasyPrint + Pandoc
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    libxrender1 \
-    libxext6 \
-    libsm6
+    libpango-1.0-0 \
+    libpangoft2-1.0-0 \
+    pandoc \
+    && rm -rf /var/lib/apt/lists/*
 
+# Copy project files
+COPY . /app
 
-# Install Python deps
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy project
-COPY . .
 
 # Expose port
 EXPOSE 8000
 
-# Run API
+# Start FastAPI app
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
