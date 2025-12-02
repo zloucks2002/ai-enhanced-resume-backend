@@ -4,11 +4,11 @@ import os
 import tempfile
 from io import BytesIO
 
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 import pypandoc
 
 
-def html_to_pdf_bytes(html: str) -> bytes:
+async def html_to_pdf_bytes(html: str) -> bytes:
     """
     Render the given HTML string to a PDF using Playwright/Chromium.
 
@@ -24,7 +24,7 @@ def html_to_pdf_bytes(html: str) -> bytes:
             f.write(html)
 
         # Use Playwright to render HTML -> PDF (same config you used before)
-        with sync_playwright() as p:
+        async with async_playwright() as p:
             browser = p.chromium.launch()
             page = browser.new_page()
 

@@ -38,14 +38,14 @@ async def export_pdf(file: UploadFile = File(...)):
     try:
         html_bytes = await file.read()
         html = html_bytes.decode("utf-8", errors="ignore")
-        pdf = html_to_pdf_bytes(html)
+        pdf = await html_to_pdf_bytes(html)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {e}")
 
     return StreamingResponse(
         BytesIO(pdf),
         media_type="application/pdf",
-        headers={"Content-Disposition": 'attachment; filename="resume.pdf"'},
+        headers={"Content-Disposition": 'attachment; filename=\"resume.pdf\"'},
     )
 
 
