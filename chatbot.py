@@ -6,7 +6,6 @@ import os
 import time
 import logging
 from datetime import datetime
-from playwright.sync_api import sync_playwright
 import shutil
 import base64
 import pypandoc
@@ -997,45 +996,6 @@ def retrieve_resume_html(supabase, resume_id, user_id):
         logging.error(f"Failed to retrieve resume HTML: {e}")
         return None
 
-#Exports the HTML resume to a PDF using Playwright
-def export_resume_to_pdf(html_path, output_path):
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page()
-        page.goto(f"file://{os.path.abspath(html_path)}")
-        page.pdf(
-            path=output_path,
-            format="Letter",
-            margin={"top": "0", "bottom": "0", "left": "0", "right": "0"},
-            print_background=True,
-            prefer_css_page_size=True,
-            scale=1.0
-        )
-        browser.close()
-        print(f"PDF generated successfully: {output_path}")
-
-
-
-import os
-import logging
-import pypandoc
-
-#Exports the HTML respume to a DOCX using a Node.js helper script
-def export_resume_to_docx(html_path, output_path):
-    try:
-        pypandoc.convert_file(
-            html_path,
-            "docx",
-            format="html",
-            outputfile=output_path,
-            extra_args=["--standalone"]
-        )
-        logging.info(f"DOCX generated successfully: {output_path}")
-    except Exception as e:
-        logging.error(f"Error generating DOCX: {e}")    
-
-
-
     
 #Uploads the original file to Supabase Storage for reference, and returns the storage path
 def upload_original_file_to_supabase(supabase, file_path, user_id, resume_name):
@@ -1276,13 +1236,7 @@ def main():
                         f.write(html_resume)
                     logging.info("HTML resume generated: resume_preview.html")
                     resume_name = input("Enter a name for this resume: ").strip() or "New Resume"
-                    export_choice = input("Would you like to export as PDF, DOCX, or skip? (pdf/docx/skip): ").strip().lower()
-                    if export_choice == "pdf":
-                        export_resume_to_pdf("resume_preview.html", f"{resume_name}.pdf")
-                    elif export_choice == "docx":
-                        export_resume_to_docx("resume_preview.html", f"{resume_name}.docx")
-                    else:
-                        logging.info("Export skipped.")
+                
                     try:
                         insert_resume_to_supabase(supabase, resume_name, resume_json, user_id, html_resume, preferences, source_type="chatbot")
                     except Exception as e:
@@ -1428,15 +1382,7 @@ def main():
                                 with open("improved_resume.html", "w", encoding="utf-8") as f:
                                     f.write(html_resume)
                                 logging.info("Improved resume saved as improved_resume.html")
-                                export_choice = input("Would you like to export as PDF, DOCX, or skip? (pdf/docx/skip): ").strip().lower()
-                                if export_choice == "pdf":
-                                    export_resume_to_pdf("improved_resume.html", "improved_resume.pdf")
-                                    logging.info("Improved resume exported as improved_resume.pdf")
-                                elif export_choice == "docx":
-                                    export_resume_to_docx("improved_resume.html", "improved_resume.docx")
-                                    logging.info("Improved resume exported as improved_resume.docx")
-                                else:
-                                    logging.info("Export skipped.")   
+                                 
                             else:
                                 logging.info("Failed to generate improved HTML resume.")
                         break
