@@ -1,9 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Response
 from fastapi.responses import StreamingResponse
 from app.services.resume_service import generate_html_resume_service, parse_resume_file
 from app.services.analysis_service import analyze_resume_service
 from app.services.export_service import html_to_pdf_bytes, html_to_docx_bytes
 from io import BytesIO
+from pydantic import BaseModel
 
 import json
 import uuid
@@ -32,21 +33,16 @@ async def analyze_with_context(
     pdf_bytes = await file.read()
     return analyze_resume_service(pdf_bytes, parsed, target_job)
 
-@router.post("/export/pdf")
-async def export_pdf(file: UploadFile = File(...)):
+class ExportHTMLRequest(BaseModel):
+    html: str
 
+@router.post("/export/pdf")
+async def export_pdf(req: ExportHTMLRequest):
     try:
-        html_bytes = await file.read()
-        html = html_bytes.decode("utf-8", errors="ignore")
-        pdf = await html_to_pdf_bytes(html)
+        pdf_bytes = await html_to_pdf_bytes(req.html)
+        return Response(content=pdf_bytes, media_type="application/pdf")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {e}")
-
-    return StreamingResponse(
-        BytesIO(pdf),
-        media_type="application/pdf",
-        headers={"Content-Disposition": 'attachment; filename=\"resume.pdf\"'},
-    )
 
 
 @router.post("/export/docx")

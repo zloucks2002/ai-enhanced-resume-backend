@@ -25,7 +25,7 @@ async def html_to_pdf_bytes(html: str) -> bytes:
 
         # Use Playwright to render HTML -> PDF (same config you used before)
         async with async_playwright() as p:
-            browser = await p.chromium.launch()
+            browser = await p.chromium.launch(args=["--no-sandbox"])
             context = await browser.new_context()
             page = await context.new_page()
 
@@ -42,6 +42,9 @@ async def html_to_pdf_bytes(html: str) -> bytes:
             )
 
             await browser.close()
+        
+        if not os.path.exists(pdf_path):
+            raise Exception("PDF was not generated.")
 
         # Read the resulting PDF and return as bytes
         with open(pdf_path, "rb") as f:
