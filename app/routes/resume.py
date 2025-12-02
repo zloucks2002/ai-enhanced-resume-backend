@@ -37,9 +37,12 @@ class ExportHTMLRequest(BaseModel):
     html: str
 
 @router.post("/export/pdf")
-async def export_pdf(req: ExportHTMLRequest):
+async def export_pdf(file: UploadFile = File(...)):
     try:
-        pdf_bytes = await html_to_pdf_bytes(req.html)
+        html_bytes = await file.read()
+        html = html_bytes.decode("utf-8")
+
+        pdf_bytes = await html_to_pdf_bytes(html)
         return Response(content=pdf_bytes, media_type="application/pdf")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {e}")
