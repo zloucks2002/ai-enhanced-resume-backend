@@ -38,7 +38,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install Playwright browser
 RUN python -m playwright install --with-deps chromium
 
-COPY . .
+COPY . /app
 
 COPY reference-docx /app/reference-docx
 
