@@ -56,30 +56,35 @@ REFERENCE_MAP = {
     "creative": f"{REFERENCE_DIR}/creative-reference.docx",
 }
 
-async def generate_docx_with_playwright(html: str) -> bytes:
-    # 1. Generate PDF using Playwright
-    pdf_bytes = await html_to_pdf_bytes(html)
+async def html_to_docx_bytes(html_content: str, style_choice: str = "corporate"):
+    reference_path = REFERENCE_MAP.get(style_choice.lower())
 
-    # 2. Write PDF to temp file
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as pdf_file:
-        pdf_file.write(pdf_bytes)
-        pdf_path = pdf_file.name
+    if not reference_path or not os.path.exists(reference_path):
+        raise FileNotFoundError(f"Reference DOCX not found for style: {style_choice}")
 
-    # 3. Convert PDF → DOCX with pandoc
-    docx_path = pdf_path.replace(".pdf", ".docx")
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as temp_html:
+        temp_html.write(html_content.encode("utf-8"))
+        temp_html_path = temp_html.name
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_docx:
+        temp_docx_path = temp_docx.name
 
     try:
         subprocess.run(
-            ["pandoc", pdf_path, "-o", docx_path],
+            [
+                "pandoc",
+                temp_html_path,
+                "--from=html",
+                "--to=docx",
+                f"--reference-doc={reference_path}",
+                "--output", temp_docx_path
+            ],
             check=True
         )
-    except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=500, detail=f"Pandoc failed: {str(e)}")
 
-    # 4. Read DOCX
-    try:
-        with open(docx_path, "rb") as f:
-            return f.read()
-    except FileNotFoundError:
-        raise HTTPException(status_code=500, detail="DOCX was not generated.")
+        with open(temp_docx_path, "rb") as file:
+            return file.read()
 
+    finally:
+        os.unlink(temp_html_path)
+        os.unlink(temp_docx_path)

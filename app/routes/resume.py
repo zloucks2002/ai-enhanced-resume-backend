@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Response
 from fastapi.responses import StreamingResponse
 from app.services.resume_service import generate_html_resume_service, parse_resume_file
 from app.services.analysis_service import analyze_resume_service
-from app.services.export_service import html_to_pdf_bytes, generate_docx_with_playwright
+from app.services.export_service import html_to_pdf_bytes, html_to_docx_bytes
 from io import BytesIO
 from pydantic import BaseModel
 
@@ -52,11 +52,10 @@ async def export_pdf(file: UploadFile = File(...)):
 async def export_docx(file: UploadFile = File(...)):
     html_content = (await file.read()).decode("utf-8")
     try:
-        docx_bytes = await generate_docx_with_playwright(html_content)
+        docx_bytes = await html_to_docx_bytes(html_content)
         return Response(
             content=docx_bytes,
-            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            headers={"Content-Disposition": "attachment; filename=resume.docx"}
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
     except Exception as e:
         raise HTTPException(500, f"Failed to generate DOCX: {e}")
