@@ -1,7 +1,7 @@
 import os
 import tempfile
 from io import BytesIO
-
+import subprocess
 from playwright.async_api import async_playwright
 import pypandoc
 
@@ -46,24 +46,44 @@ async def html_to_pdf_bytes(html: str) -> bytes:
             return f.read()
 
 
-def html_to_docx_bytes(html: str) -> bytes:
-    """
-    Convert HTML string → DOCX via Pandoc.
-    """
-    with tempfile.TemporaryDirectory() as tmpdir:
-        html_path = os.path.join(tmpdir, "resume.html")
-        docx_path = os.path.join(tmpdir, "resume.docx")
+REFERENCE_DIR = "/app/reference-docx"
 
-        with open(html_path, "w", encoding="utf-8") as f:
-            f.write(html)
+REFERENCE_MAP = {
+    "corporate": f"{REFERENCE_DIR}/corporate-reference.docx",
+    "modern": f"{REFERENCE_DIR}/modern-reference.docx",
+    "minimalist": f"{REFERENCE_DIR}/minimalist-reference.docx",
+    "creative": f"{REFERENCE_DIR}/creative-reference.docx",
+}
 
-        pypandoc.convert_file(
-            html_path,
-            "docx",
-            format="html",
-            outputfile=docx_path,
-            extra_args=["--standalone"],
+async def html_to_docx_bytes(html_content: str, style_choice: str = "corporate"):
+    reference_path = REFERENCE_MAP.get(style_choice.lower())
+
+    if not reference_path or not os.path.exists(reference_path):
+        raise FileNotFoundError(f"Reference DOCX not found for style: {style_choice}")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as temp_html:
+        temp_html.write(html_content.encode("utf-8"))
+        temp_html_path = temp_html.name
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_docx:
+        temp_docx_path = temp_docx.name
+
+    try:
+        subprocess.run(
+            [
+                "pandoc",
+                temp_html_path,
+                "--from=html",
+                "--to=docx",
+                f"--reference-doc={reference_path}",
+                "--output", temp_docx_path
+            ],
+            check=True
         )
 
-        with open(docx_path, "rb") as f:
-            return f.read()
+        with open(temp_docx_path, "rb") as file:
+            return file.read()
+
+    finally:
+        os.unlink(temp_html_path)
+        os.unlink(temp_docx_path)

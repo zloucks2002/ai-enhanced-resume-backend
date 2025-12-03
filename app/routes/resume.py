@@ -49,22 +49,15 @@ async def export_pdf(file: UploadFile = File(...)):
 
 
 @router.post("/export/docx")
-async def export_docx(file: UploadFile = File(...)):
-    """
-    Same as /export/pdf but outputs DOCX.
-    """
+async def export_docx(file: UploadFile = File(...), style: str = Form(...)):
+    html_content = (await file.read()).decode("utf-8")
     try:
-        html_bytes = await file.read()
-        html = html_bytes.decode("utf-8", errors="ignore")
-        docx = html_to_docx_bytes(html)
+        docx_bytes = await html_to_docx_bytes(html_content, style_choice=style)
+        return Response(
+            content=docx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate DOCX: {e}")
+        raise HTTPException(500, f"Failed to generate DOCX: {e}")
 
-    return StreamingResponse(
-        BytesIO(docx),
-        media_type=(
-            "application/vnd.openxmlformats-officedocument."
-            "wordprocessingml.document"
-        ),
-        headers={"Content-Disposition": 'attachment; filename="resume.docx"'},
-    )
+    
