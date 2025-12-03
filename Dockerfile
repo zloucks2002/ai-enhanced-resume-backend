@@ -40,4 +40,8 @@ RUN python -m playwright install --with-deps chromium
 
 COPY . .
 
+COPY reference-docx /app/reference-docx
+
+EXPOSE 8000
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
