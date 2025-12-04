@@ -69,11 +69,13 @@ async def upload_resume(
     file: UploadFile = File(...),
     user_id: str = Form(...),
 ):
-    result = upload_resume_service(file, user_id)
-    return result
+    try:
+        return await upload_resume_service(file, user_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/preview/{resume_id}")
-def preview_resume(resume_id: str):
+async def preview_resume(resume_id: str):
 
     result = supabase.table("resumes").select("*").eq("id", resume_id).single().execute()
     if not result.data:
