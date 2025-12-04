@@ -172,15 +172,15 @@ async def save_generated_resume(
     }
 
     result = (
-        supabase.table("resumes")
-        .insert(data)
-        .select("*")
-        .execute()
+    supabase.table("resumes")
+    .insert(data)
+    .execute()
     )
-    if result.error:
-        raise HTTPException(status_code=500, detail="Failed to save resume")
 
-    return {"resume_id": result.data[0]["id"]}
+    print("DEBUG RESULT:", result)
+
+    # Force return raw result instead of accessing result.data
+    return {"raw_result": str(result)}
 
 
     
