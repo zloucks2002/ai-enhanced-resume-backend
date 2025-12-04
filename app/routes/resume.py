@@ -149,15 +149,21 @@ async def rename_resume(resume_id: str, new_name: str = Form(...)):
 
 @router.post("/save-generated")
 async def save_generated_resume(
-    resume_json: dict,
+    resume_json: str = Form(...),
     resume_html: str = Form(...),
     resume_name: str = Form(...),
     user_id: str = Form(...)
 ):
+
+    try:
+        parsed_json = json.loads(resume_json)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid resume_json format")
+
     data = {
         "user_id": user_id,
         "resume_name": resume_name,
-        "resume_json": resume_json,
+        "resume_json": parsed_json,
         "resume_html": resume_html,
         "source_type": "chatbot",
         "original_file_path": None
