@@ -160,13 +160,17 @@ async def save_generated_resume(
         parsed_json = json.loads(resume_json)
     except:
         raise HTTPException(status_code=400, detail="Invalid resume_json format")
+    try:
+        parsed_preferences = json.loads(preferences)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid preferences format")
 
     data = {
         "user_id": user_id,
         "resume_json": parsed_json,
         "resume_name": resume_name,
         "resume_html": resume_html,
-        "preferences": preferences,
+        "preferences": parsed_preferences,
         "original_file_path": None,
         "source_type": "chatbot"
     }
@@ -174,13 +178,14 @@ async def save_generated_resume(
     result = (
     supabase.table("resumes")
     .insert(data)
+    .select("*")
     .execute()
     )
 
-    print("DEBUG RESULT:", result)
-
-    # Force return raw result instead of accessing result.data
-    return {"raw_result": str(result)}
+    if result.error:
+        raise HTTPException(status_code=500, detail="Failed to save generated resume")
+    
+    return {"resume_id": result.data[0]["id"]}
 
 
     
