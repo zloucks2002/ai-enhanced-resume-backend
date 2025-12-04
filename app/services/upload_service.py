@@ -5,7 +5,7 @@ from chatbot import extract_resume_text, parse_doc_text
 from app.utils.openai_client import get_openai
 
 
-def upload_resume_service(file, user_id):
+async def upload_resume_service(file, user_id):
     # Save file temporarily
     ext = file.filename.lower().split(".")[-1]
 

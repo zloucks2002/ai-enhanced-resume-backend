@@ -70,7 +70,8 @@ async def upload_resume(
     user_id: str = Form(...),
 ):
     try:
-        return await upload_resume_service(file, user_id)
+        result = await upload_resume_service(file, user_id)
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
