@@ -28,7 +28,10 @@ async def upload_resume_service(file, user_id):
     supabase.storage.from_("resumes").upload(
         path=storage_path,
         file=file_bytes,
-        file_options={"content-type": "application/octet-stream"}
+        file_options={
+            "content-type": "application/octet-stream",
+            "upsert": True
+        }
     )
 
     # Insert metadata and parsed JSON into DB

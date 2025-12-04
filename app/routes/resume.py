@@ -124,6 +124,52 @@ async def preview_resume(resume_id: str):
                 "Content-Disposition": "inline; filename=resume.html"
             })
     
+@router.delete("/{resume_id}")
+async def delete_resume(resume_id: str):
+    result = supabase.table("resumes").select("original_file_path, source_type").eq("id", resume_id).single().execute()
+    
+    if result.error or not result.data:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    resume = result.data
+    file_path = resume.get("original_file_path")
+    source_type = resume.get("source_type")
+
+    delete_res = supabase.table("resumes").delete().eq("id", resume_id).execute()
+    if delete_res.error:
+        raise HTTPException(status_code=500, detail="Failed to delete resume from database")
+    
+    if source_type == "upload" and file_path:
+        supabase.storage.from_("resumes").remove([file_path])
+    
+    return {
+        "message": "Resume deleted successfully.",
+        "resume_id": resume_id,
+        "deleted_file": bool(file_path) if source_type == "upload" else False
+    }
+
+@router.patch("/{resume_id}")
+async def rename_resume(resume_id: str, body: dict):
+    new_name = body.get("new_name")
+
+    if not new_name:
+        raise HTTPException(status_code=400, detail="new_name required")
+
+    update_res = supabase.table("resumes").update({
+        "resume_name": new_name
+    }).eq("id", resume_id).execute()
+
+    if update_res.error:
+        raise HTTPException(status_code=500, detail="Failed to rename resume")
+
+    return {
+        "message": "Resume renamed successfully",
+        "resume_id": resume_id,
+        "new_name": new_name
+    }
+
+
+    
 
 
     
