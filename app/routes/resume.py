@@ -150,6 +150,7 @@ async def rename_resume(resume_id: str, new_name: str = Form(...)):
 @router.post("/save-generated")
 async def save_generated_resume(
     resume_json: str = Form(...),
+    preferences: str = Form(...),
     resume_html: str = Form(...),
     resume_name: str = Form(...),
     user_id: str = Form(...)
@@ -162,15 +163,20 @@ async def save_generated_resume(
 
     data = {
         "user_id": user_id,
-        "resume_name": resume_name,
         "resume_json": parsed_json,
+        "resume_name": resume_name,
         "resume_html": resume_html,
-        "source_type": "chatbot",
-        "original_file_path": None
+        "preferences": preferences,
+        "original_file_path": None,
+        "source_type": "chatbot"
     }
 
-    result = supabase.table("resumes").insert(data).execute()
-
+    result = (
+        supabase.table("resumes")
+        .insert(data)
+        .select("*")
+        .execute()
+    )
     if result.error:
         raise HTTPException(status_code=500, detail="Failed to save resume")
 
