@@ -148,7 +148,7 @@ async def rename_resume(resume_id: str, new_name: str = Form(...)):
 
 
 @router.post("/save-generated")
-async def save_generated_resume(
+def save_generated_resume(
     resume_json: str = Form(...),
     preferences: str = Form(...),
     resume_html: str = Form(...),
