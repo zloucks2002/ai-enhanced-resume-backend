@@ -5,7 +5,6 @@ from app.services.analysis_service import analyze_resume_service
 from app.services.export_service import html_to_pdf_bytes, html_to_docx_bytes
 from app.services.upload_service import upload_resume_service
 from app.utils.supabase_client import supabase
-import tempfile
 import os
 from pydantic import BaseModel
 
@@ -97,7 +96,7 @@ def preview_resume(resume_id: str):
         if ext == "pdf":
             return Response(
                 content=res,
-                media_type="application/pdf"
+                media_type="application/pdf",
                 headers={
                     "Content-Disposition": f'inline; filename="{os.path.basename(file_path)}"'
                 }
