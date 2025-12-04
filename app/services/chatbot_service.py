@@ -60,19 +60,22 @@ def send_chat_message(session_id: str, text: str):
 
 
 
-def get_resume_json_from_session(session_id):
+def get_resume_json_from_session(session_id: str):
     session = SESSIONS.get(session_id)
     if not session:
-        return {"error": "Invalid session_id"}
-    client = get_openai()
-    messages = session["messages"].copy()
-    return get_resume_json(messages, client)
+        return {"resume_json": {}}
+
+    return {
+        "resume_json": session.get("resume_json", {})
+    }
+
 
 
 def get_preferences_from_session(session_id):
     session = SESSIONS.get(session_id)
     if not session:
-        return {"error": "Invalid session_id"}
-    client = get_openai()
-    messages = session["messages"].copy()
-    return get_resume_preferences(messages, client)
+        return {"preferences": {}}
+    
+    return {
+        "preferences": session.get("preferences", {})
+    }
