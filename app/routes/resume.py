@@ -93,21 +93,34 @@ def preview_resume(resume_id: str):
             raise HTTPException(status_code=500, detail="Failed to download file.")
         
         ext = file_path.split(".")[-1]
-        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as tmp:
-            tmp.write(res)
-            tmp_path = tmp.name
 
-        return FileResponse(tmp_path, filename=os.path.basename(file_path))
-    
-    html = resume.get("resume_html")
-    if not html:
-        raise HTTPException(status_code=500, detail="Resume HTML missing.")
-    
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp:
-        tmp.write(html.encode("utf-8"))
-        html_path = tmp.name
+        if ext == "pdf":
+            return Response(
+                content=res,
+                media_type="application/pdf"
+                headers={
+                    "Content-Disposition": f'inline; filename="{os.path.basename(file_path)}"'
+                }
+            )
+        else:
+            return Response(
+                content=res,
+                media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                headers={
+                    "Content-Disposition": f'attachment; filename="{os.path.basename(file_path)}"'
+                }
+            )
+    else:
+        html = resume.get("resume_html")
+        if not html:
+            raise HTTPException(status_code=500, detail="Resume HTML missing.")
 
-    return FileResponse(html_path, media_type="text/html")
+        return Response(
+            content=html, 
+            media_type="text/html; charset=utf-8",
+            headers={
+                "Content-Disposition": "inline; filename=resume.html"
+            })
     
 
 
