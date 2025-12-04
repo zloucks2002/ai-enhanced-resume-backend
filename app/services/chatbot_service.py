@@ -64,18 +64,18 @@ def get_resume_json_from_session(session_id: str):
     session = SESSIONS.get(session_id)
     if not session:
         return {"resume_json": {}}
-
-    return {
-        "resume_json": session.get("resume_json", {})
-    }
-
-
+    if not session.get("resume_json"):
+        client = get_openai()
+        resume_json = get_resume_json(session["messages"], client)
+        session["resume_json"] = resume_json
+    return {"resume_json": session["resume_json"]}
 
 def get_preferences_from_session(session_id):
     session = SESSIONS.get(session_id)
     if not session:
         return {"preferences": {}}
-    
-    return {
-        "preferences": session.get("preferences", {})
-    }
+    if not session.get("preferences_json"):
+        client = get_openai()
+        preferences = get_resume_preferences(session["messages"], client)
+        session["preferences_json"] = preferences
+    return {"preferences": session["preferences_json"]}
