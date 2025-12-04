@@ -19,7 +19,7 @@ async def html_to_pdf_bytes(html: str) -> bytes:
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)
 
-        # Playwright async API
+        # Playwright to render HTML to PDF
         async with async_playwright() as p:
             browser = await p.chromium.launch(args=["--no-sandbox"])
             context = await browser.new_context()
@@ -27,7 +27,6 @@ async def html_to_pdf_bytes(html: str) -> bytes:
 
             await page.goto(f"file://{html_path}")
 
-            # THIS WAS YOUR ERROR — page.pdf MUST BE AWAITED
             await page.pdf(
                 path=pdf_path,
                 format="Letter",

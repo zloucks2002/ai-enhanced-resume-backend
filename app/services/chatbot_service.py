@@ -16,8 +16,8 @@ def start_chat_session(user_id=None):
     SESSIONS[session_id] = {
         "messages": messages,
         "user_id": user_id,
-        "resume_json": {},           # <-- NEW
-        "preferences_json": {},      # <-- NEW
+        "resume_json": {},           
+        "preferences_json": {},      
     }
 
     # return assistant greeting
@@ -73,4 +73,6 @@ def get_preferences_from_session(session_id):
     session = SESSIONS.get(session_id)
     if not session:
         return {"error": "Invalid session_id"}
-    return session.get("preferences_json", {})
+    client = get_openai()
+    messages = session["messages"].copy()
+    return get_resume_preferences(messages, client)
