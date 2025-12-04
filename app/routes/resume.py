@@ -178,14 +178,13 @@ async def save_generated_resume(
     result = (
     supabase.table("resumes")
     .insert(data)
-    .select("*")
     .execute()
-    )
+)
 
-    if result.error:
-        raise HTTPException(status_code=500, detail="Failed to save generated resume")
-    
-    return {"resume_id": result.data[0]["id"]}
+    print("DEBUG SUPABASE RESPONSE:", result)
+
+    return {"debug": str(result)}
+
 
 
     
