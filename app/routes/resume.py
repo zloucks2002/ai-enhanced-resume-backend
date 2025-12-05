@@ -224,13 +224,6 @@ def save_generated_resume(
         "source_type": "chatbot"
     }
 
-    try:
-        result = supabase.table("resumes").insert(data).execute()
-    except Exception as e:
-        # Check for duplicate key constraint
-        if "23505" in str(e) or "duplicate key" in str(e):
-            raise HTTPException(status_code=400, detail="Resume name already exists for this user.")
-        raise
 
     fetch = (
         supabase.table("resumes")
