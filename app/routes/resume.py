@@ -177,7 +177,7 @@ def save_generated_resume(
 
     result = (
     supabase.table("resumes")
-    .insert(data, returning="representation")
+    .insert(data)
     .execute()
     )
 
