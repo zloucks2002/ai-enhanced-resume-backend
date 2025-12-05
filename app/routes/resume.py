@@ -219,7 +219,7 @@ def save_generated_resume(
     return {"resume_id": fetch.data[0]["id"], "resume_name": final_name}
 
 
-@router.get("/improve/start")
+@router.post("/improve/start")
 async def improve_start(
     resume_id: str = Form(...),
     user_id: str = Form(...),
