@@ -193,12 +193,12 @@ def continue_improvement_session(session_id: str, user_message: str):
 
         if file_ext == ".pdf" and file_bytes:
             # visual + text analysis
-            analysis_result = analyze_resume_service(file_bytes, parsed_resume, target_job)
+            analysis_result = analyze_resume_service(file_bytes, parsed_resume, target_job, file_ext)
         else:
             # text-only analysis fallback (DOCX or chatbot resume)
             # We'll reuse the analysis_service but pass None,
             # and let it do a text-only branch.
-            analysis_result = analyze_resume_service(None, parsed_resume, target_job)
+            analysis_result = analyze_resume_service(None, parsed_resume, target_job, file_ext)
 
         if "error" in analysis_result:
             analysis_text = f"Analysis failed: {analysis_result['error']}"
