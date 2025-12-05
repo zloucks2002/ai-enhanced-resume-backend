@@ -77,7 +77,7 @@ def start_improvement_session(resume_id: str, user_id: str):
 
     return {
         "session_id": session_id,
-        "assistant_reply": assistant_reply,
+        "assistant_message": assistant_reply,
     }
 
 
@@ -226,7 +226,7 @@ def continue_improvement_session(session_id: str, user_message: str):
         session["stage"] = "improving"
 
         return {
-            "assistant_reply": assistant_intro,
+            "assistant_message": assistant_intro,
             "ready_to_finalize": False,
         }
 
@@ -245,7 +245,7 @@ def continue_improvement_session(session_id: str, user_message: str):
     ready = "i'm ready to generate the resume." in reply.lower()
 
     return {
-        "assistant_reply": reply,
+        "assistant_message": reply,
         "ready_to_finalize": ready,
     }
 
