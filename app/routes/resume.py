@@ -4,6 +4,7 @@ from app.services.resume_service import generate_html_resume_service, parse_resu
 from app.services.analysis_service import analyze_resume_service
 from app.services.export_service import html_to_pdf_bytes, html_to_docx_bytes
 from app.services.upload_service import upload_resume_service
+from app.services.improvement_service import start_improvement_session, continue_improvement_session, finalize_improvement_session
 from app.utils.supabase_client import supabase
 import os
 from pydantic import BaseModel
@@ -63,11 +64,15 @@ async def analyze_with_context(
     target_job: str = Form(...),
 ):
     parsed = json.loads(parsed_json)
-    pdf_bytes = await file.read()
-    return analyze_resume_service(pdf_bytes, parsed, target_job)
+    file_bytes = await file.read()
 
-class ExportHTMLRequest(BaseModel):
-    html: str
+    filename = file.filename or ""
+    ext = os.path.splitext(filename)[1]
+
+    if ext not in [".pdf", ".docx"]:
+        raise HTTPException(status_code=400, detail="Unsupported file type. Only PDF and DOCX resumes are supported.")
+
+    return analyze_resume_service(file_bytes, parsed, target_job, ext)
 
 # Export PDF file
 @router.post("/export/pdf")
@@ -241,6 +246,36 @@ def save_generated_resume(
         raise HTTPException(status_code=500, detail="Supabase returned no data after insert")
 
     return {"resume_id": fetch.data[0]["id"], "resume_name": final_name}
+
+
+@router.get("/improve/start")
+async def improve_start(
+    resume_id: str = Form(...),
+    user_id: str = Form(...),
+):
+    try:
+        return start_improvement_session(resume_id, user_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@router.post("/improve/message")
+async def improve_message(
+    session_id: str = Form(...),
+    message: str = Form(...),
+):
+    try:
+        return continue_improvement_session(session_id, message)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@router.post("/improve/finalize")
+async def improve_finalize(
+    session_id: str = Form(...),
+):
+    try:
+        return finalize_improvement_session(session_id)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 
