@@ -224,6 +224,8 @@ def save_generated_resume(
         "source_type": "chatbot"
     }
 
+    supabase.table("resumes").insert(data).execute()
+
 
     fetch = (
         supabase.table("resumes")
