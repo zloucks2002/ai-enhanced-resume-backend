@@ -175,19 +175,28 @@ def save_generated_resume(
         "source_type": "chatbot"
     }
 
-    result = (
-    supabase.table("resumes")
-    .insert(data)
-    .execute()
+    try:
+        result = supabase.table("resumes").insert(data).execute()
+    except Exception as e:
+        # Check for duplicate key constraint
+        if "23505" in str(e) or "duplicate key" in str(e):
+            raise HTTPException(status_code=400, detail="Resume name already exists for this user.")
+        raise
+
+    fetch = (
+        supabase.table("resumes")
+        .select("id")
+        .eq("user_id", user_id)
+        .eq("resume_name", resume_name.strip())
+        .order("created_at", desc=True)
+        .limit(1)
+        .execute()
     )
 
-    if result.error:
-        raise HTTPException(status_code=500, detail=f"Supabase error: {result.error}")
-
-    if not result.data:
+    if fetch.data is None:
         raise HTTPException(status_code=500, detail="Supabase returned no data after insert")
 
-    return {"resume_id": result.data[0]["id"]}
+    return {"resume_id": fetch.data[0]["id"]}
 
 
 
