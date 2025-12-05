@@ -13,6 +13,37 @@ import uuid
 
 router = APIRouter()
 
+def generate_unique_resume_name(user_id: str, base_name: str):
+    base_name = base_name.strip()
+    
+    # First check if the name is free
+    existing = (
+        supabase.table("resumes")
+        .select("resume_name")
+        .eq("user_id", user_id)
+        .eq("resume_name", base_name)
+        .execute()
+    )
+
+    if existing.data in (None, [],):
+        return base_name  # available
+
+    # Otherwise, increment suffixes
+    suffix = 1
+    while True:
+        new_name = f"{base_name} ({suffix})"
+        check = (
+            supabase.table("resumes")
+            .select("resume_name")
+            .eq("user_id", user_id)
+            .eq("resume_name", new_name)
+            .execute()
+        )
+        if check.data in (None, [],):
+            return new_name
+        suffix += 1
+
+
 
 # Generate HTML resume
 @router.post("/generate")
@@ -143,8 +174,24 @@ async def delete_resume(resume_id: str):
 
 @router.post("/rename/{resume_id}")
 async def rename_resume(resume_id: str, new_name: str = Form(...)):
+    new_name = new_name.strip()
+
+    row = (
+        supabase.table("resumes")
+        .select("user_id")
+        .eq("id", resume_id)
+        .single()
+        .execute()
+    )
+    if not row.data:
+        raise HTTPException(404, "Resume not found")
+    
+    user_id = row.data["user_id"]
+    
+    final_name = generate_unique_resume_name(user_id, new_name)
+
     supabase.table("resumes").update({"resume_name": new_name}).eq("id", resume_id).execute()
-    return {"message": "Renamed"}
+    return {"message": "Renamed", "new_name": final_name}
 
 
 @router.post("/save-generated")
@@ -164,6 +211,8 @@ def save_generated_resume(
         parsed_preferences = json.loads(preferences)
     except:
         raise HTTPException(status_code=400, detail="Invalid preferences format")
+    
+    final_name = generate_unique_resume_name(user_id, resume_name)
 
     data = {
         "user_id": user_id,
@@ -187,7 +236,7 @@ def save_generated_resume(
         supabase.table("resumes")
         .select("id")
         .eq("user_id", user_id)
-        .eq("resume_name", resume_name.strip())
+        .eq("resume_name", final_name)
         .order("created_at", desc=True)
         .limit(1)
         .execute()
@@ -196,7 +245,7 @@ def save_generated_resume(
     if fetch.data is None:
         raise HTTPException(status_code=500, detail="Supabase returned no data after insert")
 
-    return {"resume_id": fetch.data[0]["id"]}
+    return {"resume_id": fetch.data[0]["id"], "resume_name": final_name}
 
 
 
