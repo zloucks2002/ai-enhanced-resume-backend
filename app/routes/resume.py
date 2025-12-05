@@ -217,7 +217,7 @@ def save_generated_resume(
     data = {
         "user_id": user_id,
         "resume_json": parsed_json,
-        "resume_name": resume_name,
+        "resume_name": final_name,
         "resume_html": resume_html,
         "preferences": parsed_preferences,
         "original_file_path": None,
