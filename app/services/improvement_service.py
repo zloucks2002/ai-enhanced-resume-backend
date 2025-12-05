@@ -14,7 +14,7 @@ from chatbot import (
     normalize_descriptions,
 )
 from render_resume import generate_html_from_template
-from app.routes.resume import generate_unique_resume_name  # reuse your helper if accessible
+from resume_service import generate_unique_resume_name
 
 # In-memory improvement sessions
 IMPROVE_SESSIONS: Dict[str, Dict[str, Any]] = {}

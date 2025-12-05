@@ -14,36 +14,6 @@ import uuid
 
 router = APIRouter()
 
-def generate_unique_resume_name(user_id: str, base_name: str):
-    base_name = base_name.strip()
-    
-    # First check if the name is free
-    existing = (
-        supabase.table("resumes")
-        .select("resume_name")
-        .eq("user_id", user_id)
-        .eq("resume_name", base_name)
-        .execute()
-    )
-
-    if existing.data in (None, [],):
-        return base_name  # available
-
-    # Otherwise, increment suffixes
-    suffix = 1
-    while True:
-        new_name = f"{base_name} ({suffix})"
-        check = (
-            supabase.table("resumes")
-            .select("resume_name")
-            .eq("user_id", user_id)
-            .eq("resume_name", new_name)
-            .execute()
-        )
-        if check.data in (None, [],):
-            return new_name
-        suffix += 1
-
 
 
 # Generate HTML resume

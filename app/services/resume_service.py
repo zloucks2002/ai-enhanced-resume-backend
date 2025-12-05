@@ -2,6 +2,38 @@ import tempfile
 from render_resume import generate_html_from_template
 from chatbot import parse_doc_text, extract_resume_text
 from app.utils.openai_client import get_openai
+from app.utils.supabase_client import supabase
+
+def generate_unique_resume_name(user_id: str, base_name: str):
+
+    base_name = base_name.strip()
+    
+    # First check if the name is free
+    existing = (
+        supabase.table("resumes")
+        .select("resume_name")
+        .eq("user_id", user_id)
+        .eq("resume_name", base_name)
+        .execute()
+    )
+
+    if existing.data in (None, [],):
+        return base_name  # available
+
+    # Otherwise, increment suffixes
+    suffix = 1
+    while True:
+        new_name = f"{base_name} ({suffix})"
+        check = (
+            supabase.table("resumes")
+            .select("resume_name")
+            .eq("user_id", user_id)
+            .eq("resume_name", new_name)
+            .execute()
+        )
+        if check.data in (None, [],):
+            return new_name
+        suffix += 1
 
 def generate_html_resume_service(body: dict):
     resume_json = body["resume_json"]
