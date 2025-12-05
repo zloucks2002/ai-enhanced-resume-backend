@@ -5,6 +5,7 @@ from app.services.analysis_service import analyze_resume_service
 from app.services.export_service import html_to_pdf_bytes, html_to_docx_bytes
 from app.services.upload_service import upload_resume_service
 from app.services.improvement_service import start_improvement_session, continue_improvement_session, finalize_improvement_session
+from app.services.resume_service import generate_unique_resume_name
 from app.utils.supabase_client import supabase
 import os
 from pydantic import BaseModel
