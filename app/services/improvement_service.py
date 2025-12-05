@@ -3,7 +3,7 @@
 import uuid
 import json
 from typing import Dict, Any
-import datetime
+from datetime import datetime
 
 from app.utils.supabase_client import supabase
 from app.utils.openai_client import get_openai
@@ -173,7 +173,7 @@ def _build_improvement_system_prompt(target_job: str, analysis: str, parsed_resu
 
 
 def continue_improvement_session(session_id: str, user_message: str):
-    from datetime import datetime  # used inside _build_improvement_system_prompt
+      # used inside _build_improvement_system_prompt
 
     session = IMPROVE_SESSIONS.get(session_id)
     if not session:
