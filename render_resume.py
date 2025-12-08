@@ -61,14 +61,19 @@ def render_skills(skills):
     if not skills:
         return ""
 
-    # Skills may be a list or a grouped dict
+    # Normalize skills if they are in dictionary format
     if isinstance(skills, dict):
         flat = []
         for group in skills.values():
             flat.extend(group)
-        return ", ".join(flat)
+        skill_text = ", ".join(flat)
+    else:
+        skill_text = ", ".join(skills)
 
-    return ", ".join(skills)
+    return f"""
+    <h2>Skills</h2>
+    <div>{skill_text}</div>
+    """
 
 
 def render_projects(projects):
@@ -194,8 +199,8 @@ def generate_html_from_template(resume_json, preferences):
         .replace("{{summary}}", summary_html)
         .replace("{{experience}}", experience_html)
         .replace("{{education}}", education_html)
-        .replace("{{skills}}", skills_html)
 
+        .replace("{{skills_section}}", skills_html)
         .replace("{{projects_section}}", projects_html)
         .replace("{{certifications_section}}", certifications_html)
         .replace("{{volunteer_section}}", volunteer_html)
