@@ -5,7 +5,7 @@ from app.utils.openai_client import get_openai
 from app.utils.supabase_client import supabase
 
 def generate_unique_resume_name(user_id: str, base_name: str):
-
+    # Automatically generate a unique resume name to avoid conflicts
     base_name = base_name.strip()
     
     # First check if the name is free
@@ -18,7 +18,7 @@ def generate_unique_resume_name(user_id: str, base_name: str):
     )
 
     if existing.data in (None, [],):
-        return base_name  # available
+        return base_name  # Name is available
 
     # Otherwise, increment suffixes
     suffix = 1
@@ -36,12 +36,14 @@ def generate_unique_resume_name(user_id: str, base_name: str):
         suffix += 1
 
 def generate_html_resume_service(body: dict):
+    # Calls generate_html_from_template with provided JSON and preferences
     resume_json = body["resume_json"]
     preferences = body["preferences"]
     html = generate_html_from_template(resume_json, preferences)
     return {"html": html}
 
 def parse_resume_file(upload):
+    # Parses either a PDF or DOCX resume file and returns structured JSON
     ext = upload.filename.lower().split(".")[-1]
     with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as temp:
         temp.write(upload.file.read())
@@ -53,6 +55,7 @@ def parse_resume_file(upload):
     return parsed
 
 def get_resume_html_by_id(supabase, resume_id):
+    # Fetches the stored HTML resume by its ID from Supabase
     try:
         response = (
             supabase.table("resumes")

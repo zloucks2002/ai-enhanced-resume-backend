@@ -1,4 +1,3 @@
-# render_resume.py
 # Handles template loading and HTML resume generation.
 # Clean, stable, production-ready formatting.
 

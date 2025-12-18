@@ -1,16 +1,11 @@
 import os
 import tempfile
-from io import BytesIO
 import subprocess
 from playwright.async_api import async_playwright
-import pypandoc
-from fastapi import HTTPException
 
 
 async def html_to_pdf_bytes(html: str) -> bytes:
-    """
-    Render the given HTML string to a PDF using Playwright/Chromium.
-    """
+    # Render the HTML to PDF using Playwright
     with tempfile.TemporaryDirectory() as tmpdir:
         html_path = os.path.join(tmpdir, "resume.html")
         pdf_path = os.path.join(tmpdir, "resume.pdf")
@@ -19,7 +14,7 @@ async def html_to_pdf_bytes(html: str) -> bytes:
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)
 
-        # Playwright to render HTML to PDF
+        # Playwright rendering
         async with async_playwright() as p:
             browser = await p.chromium.launch(args=["--no-sandbox"])
             context = await browser.new_context()
@@ -56,6 +51,7 @@ REFERENCE_MAP = {
 }
 
 async def html_to_docx_bytes(html_content: str, style_choice: str = "corporate"):
+    # Convert HTML to DOCX using Pandoc with a reference document for styling
     reference_path = REFERENCE_MAP.get(style_choice.lower())
 
     if not reference_path or not os.path.exists(reference_path):

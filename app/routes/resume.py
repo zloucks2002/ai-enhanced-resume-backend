@@ -1,5 +1,4 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Response
-from fastapi.responses import FileResponse
 from app.services.resume_service import generate_html_resume_service, parse_resume_file
 from app.services.analysis_service import analyze_resume_service
 from app.services.export_service import html_to_pdf_bytes, html_to_docx_bytes
@@ -8,10 +7,7 @@ from app.services.improvement_service import start_improvement_session, continue
 from app.services.resume_service import generate_unique_resume_name
 from app.utils.supabase_client import supabase
 import os
-from pydantic import BaseModel
-
 import json
-import uuid
 
 router = APIRouter()
 
@@ -70,7 +66,7 @@ async def export_docx(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(500, f"Failed to generate DOCX: {e}")
     
-
+# Upload resume
 @router.post("/upload")
 async def upload_resume(
     file: UploadFile = File(...),
@@ -82,6 +78,7 @@ async def upload_resume(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Preview resume
 @router.get("/preview/{resume_id}")
 async def preview_resume(resume_id: str):
 
@@ -130,7 +127,8 @@ async def preview_resume(resume_id: str):
             headers={
                 "Content-Disposition": "inline; filename=resume.html"
             })
-    
+
+# Delete resume
 @router.delete("/{resume_id}")
 async def delete_resume(resume_id: str):
     row = supabase.table("resumes").select("*").eq("id", resume_id).single().execute()
@@ -147,7 +145,7 @@ async def delete_resume(resume_id: str):
 
     return {"message": "Deleted"}
 
-
+# Rename resume
 @router.post("/rename/{resume_id}")
 async def rename_resume(resume_id: str, new_name: str = Form(...)):
     new_name = new_name.strip()
@@ -169,7 +167,7 @@ async def rename_resume(resume_id: str, new_name: str = Form(...)):
     supabase.table("resumes").update({"resume_name": new_name}).eq("id", resume_id).execute()
     return {"message": "Renamed", "new_name": final_name}
 
-
+# Save generated resume
 @router.post("/save-generated")
 def save_generated_resume(
     resume_json: str = Form(...),
@@ -218,7 +216,7 @@ def save_generated_resume(
 
     return {"resume_id": fetch.data[0]["id"], "resume_name": final_name}
 
-
+# Start improvement session
 @router.post("/improve/start")
 async def improve_start(
     resume_id: str = Form(...),
@@ -228,7 +226,8 @@ async def improve_start(
         return start_improvement_session(resume_id, user_id)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
+#Continue improvement session
 @router.post("/improve/message")
 async def improve_message(
     session_id: str = Form(...),
@@ -238,7 +237,8 @@ async def improve_message(
         return continue_improvement_session(session_id, message)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
+#Finalize improvement session
 @router.post("/improve/finalize")
 async def improve_finalize(
     session_id: str = Form(...),

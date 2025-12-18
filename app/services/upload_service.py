@@ -6,7 +6,7 @@ from app.utils.openai_client import get_openai
 
 
 async def upload_resume_service(file, user_id):
-    # Save file temporarily
+    # Uploads and parses a resume file (PDF or DOCX), stores it in Supabase, and returns resume_id and parsed JSON
     ext = file.filename.lower().split(".")[-1]
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as temp:

@@ -2,6 +2,7 @@ import os
 from openai import OpenAI
 
 def get_openai():
+    #Initialize and return OpenAI client
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise ValueError("Missing OPENAI_API_KEY")

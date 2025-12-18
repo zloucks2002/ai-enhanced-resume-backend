@@ -1,5 +1,3 @@
-# app/services/improvement_service.py
-
 import uuid
 import json
 from typing import Dict, Any
@@ -58,16 +56,17 @@ def start_improvement_session(resume_id: str, user_id: str):
 
     file_bytes, file_ext = _get_resume_file_bytes_and_ext(resume)
 
+    #Initialize improvement session
     session_id = str(uuid.uuid4())
     IMPROVE_SESSIONS[session_id] = {
         "resume_id": resume_id,
         "user_id": user_id,
         "parsed_resume": parsed_resume,
         "file_bytes": file_bytes,
-        "file_ext": file_ext,  # ".pdf", ".docx", or None
+        "file_ext": file_ext,  
         "target_job": None,
         "analysis": None,
-        "messages": [],   # improvement chat messages
+        "messages": [],  
         "stage": "awaiting_target_job",
     }
 
@@ -82,18 +81,9 @@ def start_improvement_session(resume_id: str, user_id: str):
 
 
 def _build_improvement_system_prompt(target_job: str, analysis: str, parsed_resume: dict):
-    """
-    Take the long system_context string you already have in chatbot.py
-    for the improvement flow and adapt it here.
-
-    You can literally copy your big f-string system_context from the
-    original `analyze_resume_with_industry_context` improvement section
-    and just plug in target_job, analysis, and parsed_resume.
-    """
+    # Build the system prompt for the improvement chatbot session (1st part of improvement flow)
     today = datetime.today().strftime("%B %Y")
 
-    # THIS SHOULD BE YOUR EXISTING LONG SYSTEM PROMPT,
-    # trimmed here for brevity – copy from your CLI version.
     system_context = f"""
     Today's date is {today}.
     You are a resume improvement assistant.
@@ -173,31 +163,27 @@ def _build_improvement_system_prompt(target_job: str, analysis: str, parsed_resu
 
 
 def continue_improvement_session(session_id: str, user_message: str):
-      # used inside _build_improvement_system_prompt
-
+    # 2nd part of improvement flow
     session = IMPROVE_SESSIONS.get(session_id)
     if not session:
         raise ValueError("Improvement session not found")
 
     client = get_openai()
 
-    # 1) First message: treat as target_job and run analysis
+    # Retrieve target job title message
     if session["stage"] == "awaiting_target_job":
         target_job = user_message.strip()
         session["target_job"] = target_job
 
-        # Run analysis depending on file_ext
         file_bytes = session.get("file_bytes")
         file_ext = (session.get("file_ext") or "").lower()
         parsed_resume = session["parsed_resume"]
 
         if file_ext == ".pdf" and file_bytes:
-            # visual + text analysis
+            # visual + text analysis for PDF resumes
             analysis_result = analyze_resume_service(file_bytes, parsed_resume, target_job, file_ext)
         else:
-            # text-only analysis fallback (DOCX or chatbot resume)
-            # We'll reuse the analysis_service but pass None,
-            # and let it do a text-only branch.
+            # Text-only analysis fallback (DOCX or chatbot resume)
             analysis_result = analyze_resume_service(None, parsed_resume, target_job, file_ext)
 
         if "error" in analysis_result:
@@ -207,7 +193,7 @@ def continue_improvement_session(session_id: str, user_message: str):
 
         session["analysis"] = analysis_text
 
-        # Build system prompt for improvement chatbot (from your CLI)
+        # Build system prompt for improvement chatbot
         system_context = _build_improvement_system_prompt(
             target_job=target_job,
             analysis=analysis_text,
@@ -218,7 +204,7 @@ def continue_improvement_session(session_id: str, user_message: str):
             {"role": "system", "content": system_context},
         ]
 
-        # Same as your CLI:
+        # Initial assistant intro message for improvement flow
         assistant_intro = f"Let's start improving your resume for a {target_job} position. Ready to begin?"
         messages.append({"role": "assistant", "content": assistant_intro})
 
@@ -230,7 +216,7 @@ def continue_improvement_session(session_id: str, user_message: str):
             "ready_to_finalize": False,
         }
 
-    # 2) Normal improvement turn
+    # Begin improvement chat loop
     messages = session["messages"]
     messages.append({"role": "user", "content": user_message})
 
@@ -251,6 +237,7 @@ def continue_improvement_session(session_id: str, user_message: str):
 
 
 def finalize_improvement_session(session_id: str):
+    # 3rd part of improvement flow, generate and store improved resume
     session = IMPROVE_SESSIONS.get(session_id)
     if not session:
         raise ValueError("Improvement session not found")
@@ -275,7 +262,6 @@ def finalize_improvement_session(session_id: str):
     )
     base_name = row.data["resume_name"] if row.data else "Improved Resume"
 
-    # Use your unique-name helper so we don't hit unique constraint
     improved_base = f"{base_name} (Improved)"
     final_name = generate_unique_resume_name(session["user_id"], improved_base)
 
@@ -286,7 +272,7 @@ def finalize_improvement_session(session_id: str):
         "resume_html": html_resume,
         "preferences": preferences,
         "original_file_path": None,
-        "source_type": "chatbot",  # improved AI-generated version
+        "source_type": "chatbot", 
     }
 
     result = supabase.table("resumes").insert(data).execute()

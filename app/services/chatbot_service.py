@@ -6,7 +6,7 @@ from chatbot import (
 )
 from app.utils.openai_client import get_openai
 
-# In-memory session store for dev
+# In-memory session storage
 SESSIONS = {}
 
 def start_chat_session(user_id=None):
@@ -20,7 +20,7 @@ def start_chat_session(user_id=None):
         "preferences_json": {},      
     }
 
-    # return assistant greeting
+    # Return assistant greeting
     return {
         "session_id": session_id,
         "message": messages[-1]["content"],

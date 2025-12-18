@@ -1,4 +1,4 @@
-
+#File with initial console-based chatbot logic for early development
 from openai import OpenAI
 import json
 import re

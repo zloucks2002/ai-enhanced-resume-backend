@@ -1,10 +1,11 @@
-from chatbot import analyze_resume_with_industry_context
 from app.utils.openai_client import get_openai
 import base64
 import json
 import fitz
 
+
 def convert_pdf_to_images_web(pdf_path):
+    # Convert each page of the PDF to a base64-encoded PNG image for analysis
     doc = fitz.open(pdf_path)
     images = []
     for i, page in enumerate(doc):
@@ -16,6 +17,7 @@ def convert_pdf_to_images_web(pdf_path):
     return images
 
 def analyze_resume_text_only(parsed_resume, target_job):
+    # Analyze resume based solely on parsed text JSON and target job
     client = get_openai()
     prompt = f"""
     Provide a structured, expert resume analysis using ONLY the parsed JSON below.
@@ -69,8 +71,10 @@ def analyze_resume_text_only(parsed_resume, target_job):
 
 
 def analyze_resume_with_context_web(file_bytes, parsed_resume, target_job, ext):
-    ext = ext.lower()
+    #Conduct analysis based on file type and target job
 
+    ext = ext.lower()
+    
     if ext == ".pdf":
         temp_path = "temp_uploaded.pdf"
         with open(temp_path, "wb") as f:

@@ -1,8 +1,6 @@
 import os
-import logging
-from datetime import datetime
 from dotenv import load_dotenv
-from supabase import create_client, Client
+from supabase import create_client
 
 # Load environment variables
 load_dotenv()

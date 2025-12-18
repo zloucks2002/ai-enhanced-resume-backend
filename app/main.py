@@ -18,7 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ROUTES
+# Routes
 app.include_router(chatbot.router, prefix="/chatbot")
 app.include_router(resume.router, prefix="/resume")
 
